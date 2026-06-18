@@ -2,12 +2,21 @@
 	"name": "code-along-dom-manipulation",
 	"version": "1.0.0",
 	"description": "BTECH Personal Code Along Assignment",
+	"homepage": "https://github.com/madyh2450/code-along-DOM-Manipulation#readme",
+	"bugs": {
+		"url": "https://github.com/madyh2450/code-along-DOM-Manipulation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/madyh2450/code-along-DOM-Manipulation.git"
+	},
+	"license": "ISC",
+	"author": "",
+	"type": "commonjs",
 	"main": "index.js",
 	"scripts": {
 		"dev": "vite"
 	},
-	"author": "",
-	"license": "ISC",
 	"dependencies": {
 		"vite": "^8.0.16"
 	}
