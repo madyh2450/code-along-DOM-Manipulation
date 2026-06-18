@@ -43,3 +43,37 @@ qaItems.forEach((qaItem) => {
 
 	accordionDiv.appendChild(questionDiv);
 });
+
+
+class DatabaseObject { 
+	string() {
+	throw new Error("Not implemented");
+	}
+}
+
+class Product { 
+	constructor(name, inventory) {}
+
+	string() { 
+		return `${this.name}: ${inventory} left in stock`
+	}
+}
+
+
+class Delivery { 
+	constructor(address, scheduledTime, product, quantity) {}
+	
+	string() { 
+		return `Delivering ${quantity} of ${product} to ${address} at ${scheduledTime}`
+	}
+
+}
+
+class ProductDao { 
+	getAll() { 
+
+		dateProduct() { 
+			
+		}
+	}
+}
