@@ -1,0 +1,14 @@
+{
+	"name": "code-along-dom-manipulation",
+	"version": "1.0.0",
+	"description": "BTECH Personal Code Along Assignment",
+	"main": "index.js",
+	"scripts": {
+		"dev": "vite"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"vite": "^8.0.16"
+	}
+}
