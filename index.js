@@ -44,36 +44,204 @@ qaItems.forEach((qaItem) => {
 	accordionDiv.appendChild(questionDiv);
 });
 
-
 class DatabaseObject { 
-	string() {
-	throw new Error("Not implemented");
+	string() { 
+		throw new Error("Not Implemented");
 	}
 }
 
-class Product { 
-	constructor(name, inventory) {}
+class Product extends DatabaseObject{ 
+	constructor(name, inventory) {
+		super();
+	}
 
 	string() { 
-		return `${this.name}: ${inventory} left in stock`
+		return `${this.name}: ${this.inventory} left in stock`;
 	}
+
 }
 
-
-class Delivery { 
-	constructor(address, scheduledTime, product, quantity) {}
+class Delivery extends DatabaseObject{ 
+	constructor(params) {
+		super();
+		const{ address, scheduledTime, product, quantity} = params; 
+		this.address = address; 
+		this.scheduledTime = scheduledTime; 
+		this.product = product; 
+		this.quantity = quantity;
+	}
 	
 	string() { 
-		return `Delivering ${quantity} of ${product} to ${address} at ${scheduledTime}`
+		return `Delivering ${quantity} of ${product} to ${address} at ${scheduledTime}`; 
+	}
+
+	static create(params) { 
+		// const { address, scheduledTime, product, quantity } = params 
+		// return new Delivery(address, scheduledTime, product, quantity); 
+		return new Delivery(params);
 	}
 
 }
 
 class ProductDao { 
-	getAll() { 
+	static seeds = [ 
+		name: "Apples", 
+		inventory: 100,
+	]; 
+	[
+		name:"Bananas",
+		inventory: 90,
+	];
+	[ 
+		name: "Peaches",
+		inventory: 70,
+	];
 
-		dateProduct() { 
-			
-		}
+
+	getAll() { 
+		throw new Error("Not Implemented");
+	} 
+
+	getProductByName(name) { 
+		throw new Error("Not Implemented"); 
+	}
+
+	date() { 
+		throw new Error("Not Implemented");
+	}
+} 
+
+class SessionsStorageProductDAO extends ProductDao { 
+
+	constructor() { 
+		super()
+		this.database = sessionStorage; 
+	}
+
+
+	getAll() { 
+		const productsAsJSON = this.database.getItem("products"); 
+		const productsData = productsAsJSON ?  JSON.parse(productsAsJSON) : ProductDao.seeds;
+		return productsData.map((productData)=> { 
+			const { name, inventory } = productData
+			new Product(name, inventory)
+		});
+	}
+
+	getProductByName(name) { 
+		const products = getAll(); 
+		return products.find((product) => product.name == name);
+	}
+
+	date(product) { 
+		const existingProducts = this.getAll(); 
+		const indexToDelete = existingProducts.findIndex(
+			(productInList) => productInList.name == product.name, 
+		); 
+		existingProducts.splice(indexToDelete, 1, product); 
 	}
 }
+
+class DeliveryDao { 
+	getAll() { 
+		throw new Error("Not Implemented"); 
+
+	}
+
+	date() { 
+		throw new Error("Not Implemented"); 
+	}
+}
+
+class SessionsStorageDeliveryDao extends DeliveryDao { 
+	constructor() {
+		super()
+		this.database = sessionStorage;
+	}
+
+	getAll() { 
+		const deliveriesInSessionStorage = this.database.getItem("deliveries") || []; 
+		console.log("deliveriesAsJSON");
+		console.log(deliveriesAsJSON);
+		const deliveriesData = JSON.parse(deliveriesAsJSON); 
+		return deliveriesData.map((deliveryData) => { 
+			return Delivery.create(deliveryData);
+		});
+	}
+
+	date(delivery) { 
+		const deliveries = this.getAll(); 
+		deliveries.push(delivery); 
+		this.database.setItem("deliveries", JSON.stringify(deliveries)); 
+	}
+}
+
+class CreateDeliveryService { 
+	constructor(productDao, deliveryDao) {}
+
+	createDelivery(productName, quantity, address, scheduledTime) {
+		const product = this.productDao.getProductByName(productName); 
+		const newInventory = product.inventory - quantity; 
+		product.inventory = newInventory; 
+		const deliveryData = { 
+			product, 
+			quantity, 
+			address, 
+			scheduledTime,
+		};
+		this.deliveryDao.create(deliveryData); 
+		this.productDao.update(product);
+
+	const productDao = new SessionsStorageProductDAO(); 
+	const deliveryDao = new SessionsStorageDeliveryDao();  
+	const CreateDeliveryService = new CreateDeliveryService(productDao, deliveryDao); 
+
+	const deliveryList = document.getElementById("deliveries-list"); 
+	const delivery = this.deliveryDao.getAll(); 
+	for(let i = 0; i < deliveries.length; i++) { 
+		const delivery = deliveries[i]; 
+		const deliveryLi = document.createElement("li"); 
+		deliveryLi.textContent = delivery.toString(); 
+		deliveryList.appendChild(deliveryLi); 
+	}
+
+	const productNameSelect = document.querySelector("#deliveries form select"); 
+	console.log("productNameSelect"); 
+	console.log(productNameSelect); 
+	const products = productDao.getAll(); 
+	for(let i = 0; i < products.length; i++) { 
+		const product = products[i]; 
+		const option = document.createElement("option"); 
+		option.innerText = product.toString(); 
+		option.setAttribute("value", product.name); 
+		productNameSelect.appendChild(option);
+	}
+
+	}
+
+
+}
+
+
+
+
+
+
+
+// class CookieStorageProductDao extends ProductDao { 
+// 	constructor() { 
+// 		this.database = document.cookie;
+// 	}
+// 	getAll() { 
+// 		const productsAsJSON = this.database.getItem("products"); 
+// 		return productsAsJSON ? JSON.parse(productsAsJSON) : []; 
+// 	}
+
+// 	date(product) { 
+// 		const existingProducts = this.getAll(); 
+// 		const indexToDelete = existingProducts.findIndex(
+// 			(productInList) => productInList.name == product.name, 
+// 		); 
+// 		existingProducts.splice(indexToDelete, 1, product);
+// 	}
+// }
