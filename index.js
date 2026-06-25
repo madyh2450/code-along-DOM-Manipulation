@@ -85,7 +85,9 @@ class Delivery extends DatabaseObject {
 
 class ProductDao {
 	static seeds = [
-		{ name: "Apples", inventory: 100 },
+		{ name: "Apples", 
+		 inventory: 100, 
+		},
 		{
 			name: "Bananas",
 			inventory: 90,
@@ -99,16 +101,21 @@ class ProductDao {
 		throw new Error("Not Implemented");
 	}
 
-	getProductByName(name) {
-		throw new Error("Not Implemented");
-	}
+	// getProductByName(name) {
+	// 	throw new Error("Not Implemented");
+	// }
+
+	getProductByName(name) { 
+		const products = this.getAll(); 
+		return products.find((products) => product.name == name); 
+	} 
 
 	date() {
 		throw new Error("Not Implemented");
 	}
 }
 
-class SessionsStorageProductDAO extends ProductDao {
+class SessionsStorageProductDao extends ProductDao {
 	constructor() {
 		super();
 		this.database = sessionStorage;
@@ -140,6 +147,41 @@ class SessionsStorageProductDAO extends ProductDao {
 		this.database.setItem("products", JSON.stringify(existingProducts));
 	}
 }
+
+class CookieStorageProductDAO extends ProductDao { 
+	constructor() { 
+		suoer();
+		this.database = document.cookie; 
+	} 
+
+	getAll() { 
+		const cookieValue = document.cookie
+			.split(" ;")
+			.find((row => row.startsWith("products")) 
+			?.split("-")[1]; 
+		const productsData = cookieValue ? JSON.parse(productsAsJSON) : ProductDao.seeds; 
+		return productsData.map) 
+		(productData) => new Product(productDAta.name, productData.inventory), 
+		); 
+		
+		date(product) { 
+			const existingProducts = this.getAll(); 
+			const indexToDelete = existingProduct.findIndex(
+				(productInLisT) => productInList.name == product.name,
+				); 
+			existingProducts.splice(indexToDelete, 1, product); 
+		} 
+		document.cookie = product=${JSON.stringify(existingProduct)};';
+}
+
+
+
+
+
+
+
+
+	
 
 class DeliveryDao {
 	getAll() {
@@ -174,6 +216,25 @@ class SessionsStorageDeliveryDao extends DeliveryDao {
 	}
 }
 
+class CookieStorageDeliveryDao extends DeliveryDao {
+	 getAll() {
+		 const cookieValue = document.cookie
+		 	.split("; ") 
+		 	.find((Row) => row.startsWtih("deliveries")) 
+		 	?.split("=")[1]; 
+
+		 const deliveriesData = cookieValue ? JSON.parse(cookieValue) : []; 
+		 return deliveriesData.map( 
+			 (deliveryData) => new Delivery(deliveryData)), 
+			 ); 
+	 }
+
+	create(delivery) { 
+		const existingDeliveries = this.getAll(); 
+		existingDeliveries.push(delivery); 
+		document.cookie = 'deliveries=${JSON.stringify(existingDeliveries)}; max-age-10'; 
+}
+
 class CreateDeliveryService {
 	constructor(productDao, deliveryDao) {
 		this.productDao = productDao;
@@ -193,7 +254,9 @@ class CreateDeliveryService {
 		this.deliveryDao.create(deliveryData);
 		this.productDao.update(product);
 
-		const productDao = new SessionsStorageProductDAO();
+		// const productDao = new SessionsStorageProductDAO();
+		const productDao = new CookieStorageProductDao();
+		const productDao = new CookieStorageDeliveryDao(); 
 		const deliveryDao = new SessionsStorageDeliveryDao();
 		const CreateDeliveryService = new CreateDeliveryService(
 			productDao,
@@ -238,7 +301,7 @@ class CreateDeliveryService {
 
 		const createDeliveryForm = document.querySelector("#deliveries form");
 		createDeliveryForm.addEventListener("submit", (event) => {
-			event.preventDefault();
+			// event.preventDefault();
 			const formData = new FormData(event.target);
 			const address = formData.get("address");
 			const scheduledTime = formData.get("scheduledTime");
