@@ -13,36 +13,40 @@ const qaItems = [
 	},
 	{
 		question: "Are there any items that cannot be shipped?",
-		answer: "Yer, there are certain restrictions on items that can be shipped due to safety and legal reasons. Please refer to our policy or contact us for more information on prohibited items.",
+		answer: "Yes, there are certain restrictions on items that can be shipped due to safety and legal reasons. Please refer to our policy or contact us for more information on prohibited items.",
 	},
 ];
 
+// Initialize Accordion
 const accordionDiv = document.getElementById("accordion");
 
-qaItems.forEach((qaItem) => {
-	//Code here does the same thing as the other code in the comment below
-	const questionText = qaItem.question;
-	const answerText = qaItem.answer;
+if (accordionDiv) {
+	qaItems.forEach((qaItem) => {
+		const questionText = qaItem.question;
+		const answerText = qaItem.answer;
 
-	// const { questionText: question, answerText: answer } = qaItem
+		const wrapper = document.createElement("div");
+		wrapper.classList.add("accordion-item");
 
-	const questionDiv = document.createElement("div");
-	questionDiv.classList.add("accordion-question");
-	questionDiv.textContent = questionText;
+		const questionDiv = document.createElement("div");
+		questionDiv.classList.add("accordion-question");
+		questionDiv.textContent = questionText;
 
-	const answerDiv = document.createElement("div");
-	answerDiv.classList.add("accordion-answer");
-	answerDiv.textContent = answerText;
+		const answerDiv = document.createElement("div");
+		answerDiv.classList.add("accordion-answer");
+		answerDiv.textContent = answerText;
 
-	questionDiv.appendChild(answerDiv);
+		wrapper.appendChild(questionDiv);
+		wrapper.appendChild(answerDiv);
 
-	questionDiv.addEventListener("click", () => {
-		questionDiv.classList.toggle("active");
-		answerDiv.classList.toggle("active");
+		questionDiv.addEventListener("click", () => {
+			questionDiv.classList.toggle("active");
+			answerDiv.classList.toggle("active");
+		});
+
+		accordionDiv.appendChild(wrapper);
 	});
-
-	accordionDiv.appendChild(questionDiv);
-});
+}
 
 class DatabaseObject {
 	string() {
@@ -60,6 +64,10 @@ class Product extends DatabaseObject {
 	string() {
 		return `${this.name}: ${this.inventory} left in stock`;
 	}
+
+	toString() {
+		return this.string();
+	}
 }
 
 class Delivery extends DatabaseObject {
@@ -76,41 +84,29 @@ class Delivery extends DatabaseObject {
 		return `Delivering ${this.quantity} of ${this.product.name} to ${this.address} at ${this.scheduledTime}`;
 	}
 
+	toString() {
+		return this.string();
+	}
+
 	static create(params) {
-		// const { address, scheduledTime, product, quantity } = params
-		// return new Delivery(address, scheduledTime, product, quantity);
 		return new Delivery(params);
 	}
 }
 
 class ProductDao {
 	static seeds = [
-		{ name: "Apples", 
-		 inventory: 100, 
-		},
-		{
-			name: "Bananas",
-			inventory: 90,
-		},
-		{
-			name: "Peaches",
-			inventory: 70,
-		},
+		{ name: "Apples", inventory: 100 },
+		{ name: "Bananas", inventory: 90 },
+		{ name: "Peaches", inventory: 70 },
 	];
 	getAll() {
 		throw new Error("Not Implemented");
 	}
-
-	// getProductByName(name) {
-	// 	throw new Error("Not Implemented");
-	// }
-
-	getProductByName(name) { 
-		const products = this.getAll(); 
-		return products.find((products) => product.name == name); 
-	} 
-
-	date() {
+	getProductByName(name) {
+		const products = this.getAll();
+		return products.find((product) => product.name === name);
+	}
+	update(product) {
 		throw new Error("Not Implemented");
 	}
 }
@@ -128,67 +124,59 @@ class SessionsStorageProductDao extends ProductDao {
 			: ProductDao.seeds;
 		return productsData.map((productData) => {
 			const { name, inventory } = productData;
-			new Product(name, inventory);
+			return new Product(name, inventory);
 		});
 	}
 
-	getProductByName(name) {
-		const products = getAll();
-		return products.find((product) => product.name == name);
-	}
-
-	date(product) {
+	update(product) {
 		const existingProducts = this.getAll();
-		const indexToDelete = existingProducts.findIndex(
-			(productInList) => productInList.name == product.name,
+		const indexToUpdate = existingProducts.findIndex(
+			(p) => p.name === product.name,
 		);
-
-		existingProducts.splice(indexToDelete, 1, product);
+		if (indexToUpdate !== -1) {
+			existingProducts.splice(indexToUpdate, 1, product);
+		} else {
+			existingProducts.push(product);
+		}
 		this.database.setItem("products", JSON.stringify(existingProducts));
 	}
 }
 
-class CookieStorageProductDAO extends ProductDao { 
-	constructor() { 
-		suoer();
-		this.database = document.cookie; 
-	} 
+class CookieStorageProductDao extends ProductDao {
+	getAll() {
+		const cookiePair = document.cookie
+			.split("; ")
+			.find((row) => row.startsWith("products="));
+		const cookieValue = cookiePair ? cookiePair.split("=")[1] : null;
+		const productsData = cookieValue
+			? JSON.parse(cookieValue)
+			: ProductDao.seeds;
+		return productsData.map(
+			(data) => new Product(data.name, data.inventory),
+		);
+	}
 
-	getAll() { 
-		const cookieValue = document.cookie
-			.split(" ;")
-			.find((row => row.startsWith("products")) 
-			?.split("-")[1]; 
-		const productsData = cookieValue ? JSON.parse(productsAsJSON) : ProductDao.seeds; 
-		return productsData.map) 
-		(productData) => new Product(productDAta.name, productData.inventory), 
-		); 
-		
-		date(product) { 
-			const existingProducts = this.getAll(); 
-			const indexToDelete = existingProduct.findIndex(
-				(productInLisT) => productInList.name == product.name,
-				); 
-			existingProducts.splice(indexToDelete, 1, product); 
-		} 
-		document.cookie = product=${JSON.stringify(existingProduct)};';
+	update(product) {
+		const existingProducts = this.getAll();
+		const indexToUpdate = existingProducts.findIndex(
+			(p) => p.name === product.name,
+		);
+		if (indexToUpdate !== -1) {
+			existingProducts.splice(indexToUpdate, 1, product);
+		} else {
+			existingProducts.push(product);
+		}
+		document.cookie = `products=${JSON.stringify(
+			existingProducts,
+		)}; max-age=30; path=/`;
+	}
 }
-
-
-
-
-
-
-
-
-	
 
 class DeliveryDao {
 	getAll() {
 		throw new Error("Not Implemented");
 	}
-
-	date() {
+	create(delivery) {
 		throw new Error("Not Implemented");
 	}
 }
@@ -204,12 +192,12 @@ class SessionsStorageDeliveryDao extends DeliveryDao {
 		const deliveriesData = deliveriesInSessionStorage
 			? JSON.parse(deliveriesInSessionStorage)
 			: [];
-		return deliveriesData.map((deliveryData) => {
-			return Delivery.create(deliveryData);
-		});
+		return deliveriesData.map((deliveryData) =>
+			Delivery.create(deliveryData),
+		);
 	}
 
-	date(delivery) {
+	create(delivery) {
 		const deliveries = this.getAll();
 		deliveries.push(delivery);
 		this.database.setItem("deliveries", JSON.stringify(deliveries));
@@ -217,24 +205,25 @@ class SessionsStorageDeliveryDao extends DeliveryDao {
 }
 
 class CookieStorageDeliveryDao extends DeliveryDao {
-	 getAll() {
-		 const cookieValue = document.cookie
-		 	.split("; ") 
-		 	.find((Row) => row.startsWtih("deliveries")) 
-		 	?.split("=")[1]; 
+	getAll() {
+		const cookiePair = document.cookie
+			.split("; ")
+			.find((row) => row.startsWith("deliveries="));
+		const cookieValue = cookiePair ? cookiePair.split("=")[1] : null;
+		const deliveriesData = cookieValue ? JSON.parse(cookieValue) : [];
+		return deliveriesData.map((deliveryData) => new Delivery(deliveryData));
+	}
 
-		 const deliveriesData = cookieValue ? JSON.parse(cookieValue) : []; 
-		 return deliveriesData.map( 
-			 (deliveryData) => new Delivery(deliveryData)), 
-			 ); 
-	 }
-
-	create(delivery) { 
-		const existingDeliveries = this.getAll(); 
-		existingDeliveries.push(delivery); 
-		document.cookie = 'deliveries=${JSON.stringify(existingDeliveries)}; max-age-10'; 
+	create(delivery) {
+		const existingDeliveries = this.getAll();
+		existingDeliveries.push(delivery);
+		document.cookie = `deliveries=${JSON.stringify(
+			existingDeliveries,
+		)}; max-age=10; path=/`;
+	}
 }
 
+// Core Services
 class CreateDeliveryService {
 	constructor(productDao, deliveryDao) {
 		this.productDao = productDao;
@@ -243,8 +232,9 @@ class CreateDeliveryService {
 
 	createDelivery(productName, quantity, address, scheduledTime) {
 		const product = this.productDao.getProductByName(productName);
-		const newInventory = product.inventory - quantity;
-		product.inventory = newInventory;
+		if (!product) return;
+
+		product.inventory -= quantity;
 		const deliveryData = {
 			product,
 			quantity,
@@ -253,69 +243,98 @@ class CreateDeliveryService {
 		};
 		this.deliveryDao.create(deliveryData);
 		this.productDao.update(product);
+	}
+}
 
-		// const productDao = new SessionsStorageProductDAO();
-		const productDao = new CookieStorageProductDao();
-		const productDao = new CookieStorageDeliveryDao(); 
-		const deliveryDao = new SessionsStorageDeliveryDao();
-		const CreateDeliveryService = new CreateDeliveryService(
-			productDao,
-			deliveryDao,
-		);
+// Application Orchestration (Runs on Page Load)
+document.addEventListener("DOMContentLoaded", () => {
+	// Choose your Storage strategy here
+	const productDao = new SessionsStorageProductDao();
+	const deliveryDao = new SessionsStorageDeliveryDao();
 
-		const deliveryList = document.getElementById("deliveries-list");
-		const delivery = this.deliveryDao.getAll();
-		for (let i = 0; i < deliveries.length; i++) {
-			const delivery = deliveries[i];
+	const deliveryService = new CreateDeliveryService(productDao, deliveryDao);
+
+	// Render Deliveries List
+	const deliveryList = document.getElementById("deliveries-list");
+	function renderDeliveries() {
+		if (!deliveryList) return;
+		deliveryList.innerHTML = "";
+		const deliveries = deliveryDao.getAll();
+		deliveries.forEach((delivery) => {
 			const deliveryLi = document.createElement("li");
-			deliveryLi.textContent = delivery.toString();
+			deliveryLi.textContent = delivery.string();
 			deliveryList.appendChild(deliveryLi);
-		}
+		});
+	}
 
-		const productNameSelect = document.querySelector(
-			"#deliveries form select",
-		);
-		const products = productDao.getAll();
-		for (let i = 0; i < products.length; i++) {
-			const product = products[i];
+	// Populate Product Options dropdown
+	const productNameSelect = document.querySelector("#deliveries form select");
+	const products = productDao.getAll();
+	if (productNameSelect) {
+		products.forEach((product) => {
 			const option = document.createElement("option");
-			option.innerText = product.toString();
+			option.innerText = product.string();
 			option.setAttribute("value", product.name);
 			productNameSelect.appendChild(option);
+		});
+	}
+
+	// Dynamic max attribute based on stock selection
+	function handleChangeToProductName(event) {
+		const quantityInput = document.querySelector(
+			"#deliveries form input[name='quantity']",
+		);
+		const productName = event.target.value;
+		const selectedProduct = productDao.getProductByName(productName);
+		if (selectedProduct && quantityInput) {
+			quantityInput.setAttribute("max", selectedProduct.inventory);
 		}
+	}
 
-		function handleChangeToProductName(event) {
-			const quantityInput = document.querySelector(
-				"#deliveries form input[name='quantity']",
-			);
-			const productName = event.target.value;
-			const selectedProduct = productDao.getProductByName(productName);
-			const existingInventory = selectedProduct.inventory;
-			quantityInput.setAttribute("max", existingInventory);
+	if (productNameSelect) {
+		productNameSelect.addEventListener("change", handleChangeToProductName);
+		// Fire once to handle initial selection constraint
+		productNameSelect.dispatchEvent(new Event("change"));
+	}
 
-			productNameSelect.addEventListener(
-				"change",
-				handleChangeToProductName,
-			);
-		}
-
-		const createDeliveryForm = document.querySelector("#deliveries form");
+	// Form Event Handler
+	const createDeliveryForm = document.querySelector("#deliveries form");
+	if (createDeliveryForm) {
 		createDeliveryForm.addEventListener("submit", (event) => {
-			// event.preventDefault();
+			event.preventDefault(); // Stop page reload
+
 			const formData = new FormData(event.target);
 			const address = formData.get("address");
 			const scheduledTime = formData.get("scheduledTime");
 			const productName = formData.get("productName");
-			const quantity = formData.get("quantity");
-			CreateDeliveryService.createDelivery(
+			const quantity = parseInt(formData.get("quantity"), 10);
+
+			deliveryService.createDelivery(
 				productName,
 				quantity,
 				address,
 				scheduledTime,
 			);
+
+			// Refresh views
+			renderDeliveries();
+			if (productNameSelect) {
+				productNameSelect.innerHTML = "";
+				productDao.getAll().forEach((product) => {
+					const option = document.createElement("option");
+					option.innerText = product.string();
+					option.setAttribute("value", product.name);
+					productNameSelect.appendChild(option);
+				});
+				productNameSelect.dispatchEvent(new Event("change"));
+			}
+			createDeliveryForm.reset();
 		});
 	}
-}
+
+	// Run initial delivery list build
+	renderDeliveries();
+});
 
 // class CookieStorageProductDao extends ProductDao {
 // 	constructor() {
